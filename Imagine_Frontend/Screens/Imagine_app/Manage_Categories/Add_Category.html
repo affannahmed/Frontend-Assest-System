@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Add New Category</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+    }
+
+    .topbar {
+      background-color: #469C9C;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 20px;
+      height: 70px;
+      position: relative;
+    }
+
+    .logo-container {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .logo img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+    }
+
+    .logo-text {
+      font-size: 12px;
+      margin-top: 5px;
+      color: white;
+    }
+
+    .title {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .container {
+      padding: 20px;
+      max-width: 800px;
+      margin: auto;
+    }
+
+    label {
+      font-weight: bold;
+      margin-top: 15px;
+      display: block;
+    }
+
+    input[type="text"], select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    input[type="file"] {
+      margin-top: 10px;
+    }
+
+    .image-preview {
+      margin-top: 20px;
+      border: 1px solid #ccc;
+      padding: 10px;
+      border-radius: 8px;
+      background-color: #fff;
+    }
+
+    .image-block {
+      margin-bottom: 20px;
+    }
+
+    .image-block img {
+      max-width: 150px;
+      height: auto;
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    .submit-button {
+      background-color: #469C9C;
+      color: white;
+      padding: 12px 25px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-top: 20px;
+    }
+
+    .submit-button:hover {
+      background-color: #387d7d;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <div class="topbar">
+    <div class="logo-container">
+      <div class="logo">
+        <img src="../../../assets/images/cdn.png" alt="Logo">
+      </div>
+      <div class="logo-text">Code Knitters</div>
+    </div>
+    <div class="title">Add New Category</div>
+  </div>
+
+  <div class="container">
+    <form id="categoryForm" method="POST" enctype="multipart/form-data">
+      <label for="main_category">Main Category Name:</label>
+      <input type="text" name="main_category" id="main_category" required>
+
+      <label for="sub_category">Subcategory Name (Optional):</label>
+      <input type="text" name="sub_category" id="sub_category">
+
+      <label>Select Images Manually:</label>
+      <input type="file" id="manualImages" name="manual_images" accept="image/*" multiple>
+
+      <label>OR Select a Folder:</label>
+      <input type="file" id="folderImages" name="folder_images" accept="image/*" multiple webkitdirectory directory>
+
+      <div id="imageInputs" class="image-preview"></div>
+
+      <button type="submit" class="submit-button">Submit Category</button>
+    </form>
+  </div>
+
+  <script src="../../config.js"></script>
+  <script>
+    const manualImagesInput = document.getElementById('manualImages');
+    const folderImagesInput = document.getElementById('folderImages');
+    const imageInputsContainer = document.getElementById('imageInputs');
+    const form = document.getElementById('categoryForm');
+
+    function handleFiles(files) {
+      imageInputsContainer.innerHTML = "";
+      Array.from(files).forEach((file, index) => {
+        const block = document.createElement('div');
+        block.classList.add('image-block');
+
+        const img = document.createElement('img');
+        img.src = URL.createObjectURL(file);
+        block.appendChild(img);
+
+        // Extension dropdown
+        const extLabel = document.createElement('label');
+        extLabel.textContent = `Extension for image_${index}:`;
+        block.appendChild(extLabel);
+
+        const extSelect = document.createElement('select');
+        extSelect.name = `file_extension_${index}`;
+
+        const exts = ['jpg','png'];
+        const fileExt = file.name.split('.').pop().toLowerCase();
+
+        exts.forEach(ext => {
+          const option = document.createElement('option');
+          option.value = ext;
+          option.text = ext.toUpperCase();
+          if (ext === fileExt) option.selected = true;
+          extSelect.appendChild(option);
+        });
+
+        block.appendChild(extSelect);
+
+        // Prem radio
+        const premLabel = document.createElement('label');
+        premLabel.textContent = `Prem for image_${index}:`;
+        block.appendChild(premLabel);
+
+        ['true', 'false'].forEach(val => {
+          const radio = document.createElement('input');
+          radio.type = 'radio';
+          radio.name = `prem_${index}`;
+          radio.value = val;
+          if (val === 'false') radio.checked = true;
+          block.appendChild(radio);
+          block.appendChild(document.createTextNode(val.charAt(0).toUpperCase() + val.slice(1) + " "));
+        });
+
+        // Objects input
+        const objectsLabel = document.createElement('label');
+        objectsLabel.textContent = `Objects for image_${index} (comma-separated):`;
+        block.appendChild(objectsLabel);
+
+        const objectsInput = document.createElement('input');
+        objectsInput.type = 'text';
+        objectsInput.name = `objects_${index}`;
+        block.appendChild(objectsInput);
+
+        imageInputsContainer.appendChild(block);
+      });
+    }
+
+    manualImagesInput.addEventListener('change', () => {
+      handleFiles(manualImagesInput.files);
+    });
+
+    folderImagesInput.addEventListener('change', () => {
+      handleFiles(folderImagesInput.files);
+    });
+
+    form.addEventListener('submit', function(event) {
+      event.preventDefault();
+
+      const formData = new FormData();
+      formData.append("main_category", document.getElementById("main_category").value);
+      formData.append("sub_category", document.getElementById("sub_category").value);
+
+      // Use the last uploaded input's files
+      const files = folderImagesInput.files.length ? folderImagesInput.files : manualImagesInput.files;
+
+      Array.from(files).forEach((file, index) => {
+        formData.append(`image_${index}`, file);
+
+        const prem = document.querySelector(`input[name="prem_${index}"]:checked`).value;
+        formData.append(`prem_${index}`, prem);
+
+        const ext = document.querySelector(`select[name="file_extension_${index}"]`).value;
+        formData.append(`file_extension_${index}`, ext);
+
+        const objectsRaw = document.querySelector(`input[name="objects_${index}"]`).value;
+        const objects = objectsRaw.split(',').map(obj => obj.trim()).filter(obj => obj);
+        objects.forEach(obj => formData.append(`objects_${index}`, obj));
+      });
+
+      fetch(`${CONFIG.BACKEND_URL}/add-category`, {
+        method: 'POST',
+        body: formData
+      })
+      .then(res => res.json())
+      .then(data => {
+        alert(data.message || JSON.stringify(data));
+        form.reset();
+        imageInputsContainer.innerHTML = '';
+      })
+      .catch(err => alert('Error: ' + err));
+    });
+  </script>
+
+</body>
+</html>

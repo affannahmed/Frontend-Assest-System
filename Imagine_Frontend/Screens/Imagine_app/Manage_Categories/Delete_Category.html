@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Delete Categories</title>
+
+  <!-- ✅ Font Awesome for delete icon -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+  />
+
+  <link rel="stylesheet" href="../../Shared/css/topbar.css" />
+  <link rel="stylesheet" href="../../Shared/css/styles.css" />
+
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f9;
+    }
+
+    /* ✅ TOP BAR STYLES */
+    .topbar {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      height: 60px;
+      background-color: #469C9C;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+      z-index: 10;
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+    }
+
+    .logo img {
+      height: 40px;
+      margin-right: 10px;
+    }
+
+    .logo-text {
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .title {
+      font-size: 20px;
+      font-weight: 500;
+    }
+
+    /* ✅ PAGE STYLES */
+    .container {
+      padding: 90px 30px 30px;
+    }
+
+    .card {
+      background-color: #ffffff;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      position: relative;
+      margin-bottom: 30px;
+    }
+
+    .delete-icon {
+      color: #ff4d4d;
+      font-size: 24px;
+      cursor: pointer;
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      z-index: 2;
+    }
+
+    h2 {
+      margin: 0 0 10px 0;
+      font-size: 22px;
+      color: #222;
+    }
+
+    h3 {
+      margin: 15px 0 10px;
+      font-size: 18px;
+      color: #555;
+    }
+
+    .image-scroll {
+      display: flex;
+      gap: 15px;
+      overflow-x: auto;
+      padding-bottom: 10px;
+      margin-bottom: 10px;
+    }
+
+    .image-scroll::-webkit-scrollbar {
+      height: 6px;
+    }
+
+    .image-scroll::-webkit-scrollbar-thumb {
+      background-color: #ccc;
+      border-radius: 10px;
+    }
+
+    .image-wrapper {
+      min-width: 110px;
+      text-align: center;
+    }
+
+    .image-wrapper img {
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+      border-radius: 10px;
+      border: 1px solid #ddd;
+    }
+
+    .image-wrapper div {
+      margin-top: 4px;
+      font-size: 12px;
+      color: #444;
+    }
+
+    .meta-info {
+      font-size: 13px;
+      background-color: #f9f9f9;
+      border-radius: 8px;
+      padding: 10px;
+      margin-top: 15px;
+      color: #333;
+    }
+
+    .meta-info p {
+      margin: 5px 0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ✅ TOP BAR HTML -->
+  <div class="topbar">
+    <div class="logo-container">
+      <div class="logo">
+        <img src="../../../assets/images/cdn.png" alt="Logo">
+      </div>
+      <div class="logo-text">Code Knitters</div>
+    </div>
+    <div class="title">Delete Sub Category</div>
+  </div>
+
+  <div class="container" id="category-container">
+    <!-- Cards will be injected here -->
+  </div>
+
+  <script src="../../Shared/js/topbar.js"></script>
+  <script src="../../config.js"></script>
+  <script>
+    async function fetchCategories() {
+      const container = document.getElementById("category-container");
+      container.innerHTML = "Loading...";
+
+      try {
+        const response = await fetch(CONFIG.BACKEND_URL + "/get-categories");
+        const data = await response.json();
+        container.innerHTML = "";
+
+        data.categories.forEach((cat) => {
+          cat.sub_categories.forEach((sub) => {
+            const card = document.createElement("div");
+            card.className = "card";
+
+            const deleteIcon = document.createElement("i");
+            deleteIcon.className = "fas fa-trash delete-icon";
+            deleteIcon.title = "Delete This Category";
+            deleteIcon.onclick = async () => {
+              const confirmDelete = confirm(`Are you sure you want to delete:\nMain Category: ${cat.main_category}\nSub Category: ${sub.name}?`);
+              if (!confirmDelete) return;
+
+              try {
+                const response = await fetch(CONFIG.BACKEND_URL + "/delete-subcategory", {
+                  method: "DELETE",
+                  headers: {
+                    "Content-Type": "application/json"
+                  },
+                  body: JSON.stringify({
+                    main_category: cat.main_category,
+                    sub_category: sub.name
+                  })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                  alert("Subcategory deleted successfully.");
+                  fetchCategories(); // refresh list
+                } else {
+                  alert("Failed to delete: " + (result.error || "Unknown error"));
+                }
+              } catch (err) {
+                console.error("Delete error:", err);
+                alert("An error occurred while deleting the subcategory.");
+              }
+            };
+
+            const mainTitle = document.createElement("h2");
+            mainTitle.textContent = `Main Category: ${cat.main_category}`;
+
+            const subTitle = document.createElement("h3");
+            subTitle.textContent = `Sub Category: ${sub.name || "None"}`;
+
+            const imageScroll = document.createElement("div");
+            imageScroll.className = "image-scroll";
+
+            sub.images.forEach((img) => {
+              const wrapperImg = document.createElement("div");
+              wrapperImg.className = "image-wrapper";
+
+              const image = document.createElement("img");
+              image.src = CONFIG.BACKEND_URL + img.url;
+              image.alt = img.name || "Image";
+
+              const caption = document.createElement("div");
+              caption.textContent = img.name;
+
+              wrapperImg.appendChild(image);
+              wrapperImg.appendChild(caption);
+              imageScroll.appendChild(wrapperImg);
+            });
+
+            const metaContainer = document.createElement("div");
+            metaContainer.className = "meta-info";
+
+            const json = sub.json;
+            Object.keys(json).forEach((imgKey) => {
+              const meta = json[imgKey];
+
+              const block = document.createElement("div");
+              block.innerHTML = `
+                <p><strong>Image Name:</strong> ${meta.Name}</p>
+                <p><strong>Premium:</strong> ${meta.Prem ? "Yes" : "No"}</p>
+                <p><strong>Objects:</strong> ${meta.objects.join(", ")}</p>
+                <hr>
+              `;
+              metaContainer.appendChild(block);
+            });
+
+            card.appendChild(deleteIcon);
+            card.appendChild(mainTitle);
+            card.appendChild(subTitle);
+            card.appendChild(imageScroll);
+            card.appendChild(metaContainer);
+
+            container.appendChild(card);
+          });
+        });
+      } catch (err) {
+        console.error(err);
+        container.innerHTML = "Failed to load categories.";
+      }
+    }
+
+    window.onload = fetchCategories;
+  </script>
+</body>
+</html>

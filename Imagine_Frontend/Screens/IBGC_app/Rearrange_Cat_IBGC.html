@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Rearrange Images IBGC</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+    }
+
+    .topbar {
+      background-color: #469C9C;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 20px;
+      height: 70px;
+      position: relative;
+    }
+
+    .logo-container {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .logo img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+    }
+
+    .logo-text {
+      font-size: 12px;
+      margin-top: 5px;
+      color: white;
+    }
+
+    .title {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .container {
+      padding: 20px;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    .category-card {
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      margin-bottom: 30px;
+      padding: 20px;
+    }
+
+    .category-title {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #333;
+    }
+
+    .image-scroll {
+      display: flex;
+      overflow-x: auto;
+      gap: 15px;
+      padding-bottom: 10px;
+    }
+
+    .image-block {
+      text-align: center;
+      cursor: pointer;
+    }
+
+    .image-block img {
+      width: 70px;
+      height: 70px;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 3px solid transparent;
+      transition: 0.3s;
+    }
+
+    .image-block.selected img {
+      border-color: orange;
+    }
+
+    .filename {
+      margin-top: 5px;
+      font-size: 12px;
+      color: #555;
+    }
+
+    .prem-tag {
+      font-size: 11px;
+      margin-top: 2px;
+      color: #fff;
+      background-color: #469C9C;
+      padding: 2px 6px;
+      border-radius: 10px;
+      display: inline-block;
+    }
+
+    .loader {
+      text-align: center;
+      padding: 50px;
+      font-size: 18px;
+      color: #555;
+    }
+
+    .swap-btn {
+      display: none;
+      background-color: #469C9C;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-top: 10px;
+    }
+
+    .swap-btn.show {
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo-container">
+    <div class="logo">
+      <img src="../../assets/images/cdn.png" alt="Logo">
+    </div>
+    <div class="logo-text">Code Knitters</div>
+  </div>
+  <div class="title">Rearrange Images IBGC</div>
+</div>
+
+<div class="container" id="categoryContainer">
+  <div class="loader" id="loader">Loading categories...</div>
+</div>
+
+<script src="../config.js"></script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const container = document.getElementById("categoryContainer");
+    const loader = document.getElementById("loader");
+    let selectedImages = [];
+    let selectedCategory = null;
+
+    function resetSelection() {
+      document.querySelectorAll(".image-block").forEach(el => el.classList.remove("selected"));
+      selectedImages = [];
+      selectedCategory = null;
+      document.querySelectorAll(".swap-btn").forEach(btn => btn.classList.remove("show"));
+    }
+
+    fetch(CONFIG.BACKEND_URL + "/view-category_IBGC")
+      .then(res => res.json())
+      .then(data => {
+        loader.style.display = "none";
+
+        if (!Array.isArray(data) || data.length === 0) {
+          container.innerHTML = "<p>No categories found.</p>";
+          return;
+        }
+
+        data.forEach(category => {
+          const card = document.createElement("div");
+          card.className = "category-card";
+
+          const title = document.createElement("div");
+          title.className = "category-title";
+          title.textContent = category.category;
+
+          const imageScroll = document.createElement("div");
+          imageScroll.className = "image-scroll";
+
+          const swapBtn = document.createElement("button");
+          swapBtn.className = "swap-btn";
+          swapBtn.textContent = "Swap Selected Images";
+
+          category.images.forEach(img => {
+            const block = document.createElement("div");
+            block.className = "image-block";
+
+            const image = document.createElement("img");
+            image.src = CONFIG.BACKEND_URL + img.url;
+            image.alt = img.filename;
+            image.dataset.filename = img.filename;
+            image.dataset.category = category.category;
+
+            const name = document.createElement("div");
+            name.className = "filename";
+            name.textContent = img.filename;
+
+            const prem = document.createElement("div");
+            prem.className = "prem-tag";
+            prem.textContent = img.prem ? "Premium" : "Free";
+
+            image.addEventListener("click", () => {
+              if (selectedImages.length === 2) {
+                resetSelection();
+              }
+
+              if (!selectedCategory) {
+                selectedCategory = image.dataset.category;
+              }
+
+              if (image.dataset.category !== selectedCategory) return;
+
+              if (block.classList.contains("selected")) {
+                block.classList.remove("selected");
+                selectedImages = selectedImages.filter(f => f !== img.filename);
+              } else {
+                block.classList.add("selected");
+                selectedImages.push(img.filename);
+              }
+
+              if (selectedImages.length === 2) {
+                swapBtn.classList.add("show");
+              } else {
+                swapBtn.classList.remove("show");
+              }
+            });
+
+            block.appendChild(image);
+            block.appendChild(name);
+            block.appendChild(prem);
+            imageScroll.appendChild(block);
+          });
+
+          swapBtn.addEventListener("click", () => {
+            if (selectedImages.length !== 2) return;
+
+            const formData = new FormData();
+            formData.append("category_name", selectedCategory);
+            formData.append("image1_name", selectedImages[0]);
+            formData.append("image2_name", selectedImages[1]);
+
+            swapBtn.disabled = true;
+            swapBtn.textContent = "Swapping...";
+
+            fetch(CONFIG.BACKEND_URL + "/swap-images_IBGC", {
+              method: "POST",
+              body: formData
+            })
+              .then(res => res.json())
+              .then(res => {
+                if (res.message) {
+                  alert(res.message);
+                  location.reload();
+                } else {
+                  alert("Swap failed: " + (res.error || "Unknown error"));
+                }
+              })
+              .catch(err => {
+                alert("Error occurred while swapping.");
+                console.error(err);
+              });
+          });
+
+          card.appendChild(title);
+          card.appendChild(imageScroll);
+          card.appendChild(swapBtn);
+          container.appendChild(card);
+        });
+      })
+      .catch(err => {
+        loader.textContent = "Failed to load categories. Please try again.";
+        console.error(err);
+      });
+  });
+</script>
+
+</body>
+</html>

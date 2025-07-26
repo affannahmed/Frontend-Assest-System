@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>View Categories</title>
+ <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+    }
+
+    .topbar {
+      background-color: #469C9C;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 20px;
+      height: 70px;
+      position: relative;
+    }
+
+    .logo-container {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .logo img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+    }
+
+    .logo-text {
+      font-size: 12px;
+      margin-top: 5px;
+      color: white;
+    }
+
+    .title {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .container {
+      padding: 20px;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    .category-card {
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      margin-bottom: 30px;
+      padding: 20px;
+      position: relative;
+    }
+
+    .category-title {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #333;
+    }
+
+    .image-scroll {
+      display: flex;
+      overflow-x: auto;
+      gap: 15px;
+      padding-bottom: 10px;
+    }
+
+    .image-block {
+      text-align: center;
+      position: relative;
+    }
+
+    .image-block img {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 10%;
+    }
+
+    .filename {
+      margin-top: 5px;
+      font-size: 12px;
+      color: #555;
+    }
+
+    .prem-flag {
+      font-size: 11px;
+      color: #888;
+    }
+
+    .loader {
+      text-align: center;
+      padding: 50px;
+      font-size: 18px;
+      color: #555;
+    }
+
+    .edit-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background-color: orange;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+
+    .action-buttons {
+      display: none;
+      flex-direction: column;
+      margin-top: 10px;
+    }
+
+    .action-buttons button {
+      margin: 5px 0;
+      padding: 6px;
+      cursor: pointer;
+    }
+
+    .replace-btn, .delete-btn {
+      display: none;
+      margin-top: 5px;
+      font-size: 10px;
+      background-color: #ccc;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      padding: 3px 5px;
+    }
+
+    .prem-dropdown {
+      display: none;
+      margin-top: 3px;
+      font-size: 11px;
+    }
+
+    .bulk-update-btn {
+      display: none;
+      margin-top: 10px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .image-preview-block {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .image-preview-block div {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .image-preview-block img {
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 5px;
+    }
+
+    .rename-input {
+      display: flex;
+      margin-top: 5px;
+      gap: 10px;
+    }
+
+    .rename-input input {
+      flex: 1;
+      padding: 5px;
+    }
+
+    .rename-input button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="logo-container">
+      <div class="logo">
+        <img src="../../assets/images/cdn.png" alt="Logo">
+      </div>
+      <div class="logo-text">Code Knitters</div>
+    </div>
+    <div class="title">Update Categories IBGC</div>
+  </div>
+
+  <div class="container" id="categoryContainer">
+    <div class="loader" id="loader">Loading categories...</div>
+  </div>
+
+  <script src="../config.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const container = document.getElementById("categoryContainer");
+      const loader = document.getElementById("loader");
+
+      function showMessage(message, isError = false) {
+        alert((isError ? "❌ " : "✅ ") + message);
+      }
+
+      function refreshCategories() {
+        loader.style.display = "block";
+        container.innerHTML = "";
+        loadCategories();
+      }
+
+      function loadCategories() {
+        fetch(CONFIG.BACKEND_URL + "/view-category_IBGC")
+          .then(res => res.json())
+          .then(data => {
+            loader.style.display = "none";
+            if (!Array.isArray(data) || data.length === 0) {
+              container.innerHTML = "<p>No categories found.</p>";
+              return;
+            }
+
+            data.forEach(category => {
+              const card = document.createElement("div");
+              card.className = "category-card";
+
+              const title = document.createElement("div");
+              title.className = "category-title";
+              title.textContent = category.category;
+
+              const imageScroll = document.createElement("div");
+              imageScroll.className = "image-scroll";
+
+              const editBtn = document.createElement("button");
+              editBtn.className = "edit-btn";
+              editBtn.textContent = "Edit";
+
+              const actions = document.createElement("div");
+              actions.className = "action-buttons";
+
+              const addImagesBtn = document.createElement("button");
+              addImagesBtn.textContent = "Add Images";
+              addImagesBtn.onclick = () => {
+                const input = document.createElement("input");
+                input.type = "file";
+                input.accept = "image/*";
+                input.multiple = true;
+                input.onchange = () => {
+                  const files = Array.from(input.files);
+                  if (!files.length) return;
+
+                  const imageData = [];
+                  const previewContainer = document.createElement("div");
+                  previewContainer.className = "image-preview-block";
+
+                  files.forEach(file => {
+                    const wrapper = document.createElement("div");
+                    const img = document.createElement("img");
+                    img.src = URL.createObjectURL(file);
+                    const dropdown = document.createElement("select");
+                    dropdown.innerHTML = `
+                      <option value="false">false</option>
+                      <option value="true">true</option>
+                    `;
+                    imageData.push({ file, dropdown });
+                    wrapper.append(img, dropdown);
+                    previewContainer.appendChild(wrapper);
+                  });
+
+                  const confirmBtn = document.createElement("button");
+                  confirmBtn.textContent = "Upload Images";
+                  confirmBtn.style.marginTop = "10px";
+
+                  confirmBtn.onclick = () => {
+                    const formData = new FormData();
+                    formData.append("category_name", category.category);
+                    imageData.forEach(({ file, dropdown }) => {
+                      formData.append("images", file);
+                      formData.append("prem", dropdown.value);
+                    });
+
+                    fetch(CONFIG.BACKEND_URL + "/add-images-to-category", {
+                      method: "POST",
+                      body: formData
+                    })
+                      .then(res => res.json())
+                      .then(res => {
+                        showMessage(res.message || "Images added");
+                        refreshCategories();
+                      })
+                      .catch(() => showMessage("Failed to upload images", true));
+                  };
+
+                  card.appendChild(previewContainer);
+                  card.appendChild(confirmBtn);
+                };
+                input.click();
+              };
+
+              const renameBtn = document.createElement("button");
+              renameBtn.textContent = "Rename";
+              renameBtn.onclick = () => {
+                if (card.querySelector(".rename-input")) return;
+
+                const renameDiv = document.createElement("div");
+                renameDiv.className = "rename-input";
+
+                const input = document.createElement("input");
+                input.placeholder = "New category name";
+                input.value = category.category;
+
+                const submit = document.createElement("button");
+                submit.textContent = "Rename";
+
+                submit.onclick = () => {
+                  const old_name = category.category;
+                  const new_name = input.value.trim();
+                  if (!new_name) return alert("New name cannot be empty");
+                  if (old_name === new_name) return alert("New name must be different");
+
+                  const form = new FormData();
+                  form.append("old_name", old_name);
+                  form.append("new_name", new_name);
+
+                  fetch(CONFIG.BACKEND_URL + "/rename-category", {
+                    method: "POST",
+                    body: form
+                  })
+                    .then(res => res.json())
+                    .then(data => {
+                      if (data.success) {
+                        showMessage(data.message || "Renamed successfully.");
+                        refreshCategories();
+                      } else {
+                        showMessage(data.error || "Rename failed", true);
+                      }
+                    })
+                    .catch(() => showMessage("Rename failed", true));
+                };
+
+                renameDiv.append(input, submit);
+                card.appendChild(renameDiv);
+              };
+
+              const replaceBtn = document.createElement("button");
+              replaceBtn.textContent = "Replace";
+              replaceBtn.onclick = () => {
+                card.querySelectorAll(".replace-btn").forEach(btn => btn.style.display = "inline-block");
+              };
+
+              const deleteBtn = document.createElement("button");
+              deleteBtn.textContent = "Delete";
+              deleteBtn.onclick = () => {
+                card.querySelectorAll(".delete-btn").forEach(btn => btn.style.display = "inline-block");
+              };
+
+              const premEditBtn = document.createElement("button");
+              premEditBtn.textContent = "Set Prem Flag";
+
+              const bulkUpdateBtn = document.createElement("button");
+              bulkUpdateBtn.className = "bulk-update-btn";
+              bulkUpdateBtn.textContent = "Update All Prem Flags";
+
+              bulkUpdateBtn.onclick = () => {
+                const updates = [];
+                card.querySelectorAll(".image-block").forEach(block => {
+                  const dropdown = block.querySelector(".prem-dropdown");
+                  if (dropdown && dropdown.style.display !== "none") {
+                    const filename = block.querySelector("img").alt;
+                    const selectedPrem = dropdown.value;
+                    updates.push({
+                      category_name: category.category,
+                      filename,
+                      prem: selectedPrem
+                    });
+                  }
+                });
+
+                if (!updates.length) return showMessage("No changes made.", true);
+
+                fetch(CONFIG.BACKEND_URL + "/update-prem-flag", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify(updates)
+                })
+                  .then(res => res.json())
+                  .then(data => {
+                    if (data.success) {
+                      showMessage("Premium flags updated.");
+                      refreshCategories();
+                    } else {
+                      showMessage("Some updates failed.", true);
+                    }
+                  })
+                  .catch(() => showMessage("Update failed", true));
+              };
+
+              premEditBtn.onclick = () => {
+                card.querySelectorAll(".prem-dropdown").forEach(el => el.style.display = "inline");
+                bulkUpdateBtn.style.display = "inline-block";
+              };
+
+              actions.append(addImagesBtn, renameBtn, replaceBtn, deleteBtn, premEditBtn, bulkUpdateBtn);
+
+              category.images.forEach(img => {
+                const block = document.createElement("div");
+                block.className = "image-block";
+
+                const image = document.createElement("img");
+                image.src = CONFIG.BACKEND_URL + img.url;
+                image.alt = img.filename;
+
+                const name = document.createElement("div");
+                name.className = "filename";
+                name.textContent = img.filename;
+
+                const prem = document.createElement("div");
+                prem.className = "prem-flag";
+                prem.textContent = "Prem: " + (img.prem ? "true" : "false");
+
+                const dropdown = document.createElement("select");
+                dropdown.className = "prem-dropdown";
+                dropdown.style.display = "none";
+                dropdown.innerHTML = `
+                  <option value="false" ${!img.prem ? "selected" : ""}>false</option>
+                  <option value="true" ${img.prem ? "selected" : ""}>true</option>
+                `;
+
+                const replaceImageBtn = document.createElement("button");
+                replaceImageBtn.className = "replace-btn";
+                replaceImageBtn.textContent = "Replace";
+                replaceImageBtn.style.display = "none";
+
+                replaceImageBtn.onclick = () => {
+                  const input = document.createElement("input");
+                  input.type = "file";
+                  input.accept = "image/*";
+
+                  input.onchange = () => {
+                    const file = input.files[0];
+                    if (!file) return;
+
+                    const premSelect = document.createElement("select");
+                    premSelect.innerHTML = `
+                      <option value="false">false</option>
+                      <option value="true">true</option>
+                    `;
+
+                    const confirmBtn = document.createElement("button");
+                    confirmBtn.textContent = "Confirm Replace";
+                    confirmBtn.style.marginTop = "5px";
+
+                    confirmBtn.onclick = () => {
+                      const form = new FormData();
+                      form.append("category_name", category.category);
+                      form.append("old_filename", img.filename);
+                      form.append("new_image", file);
+                      form.append("prem", premSelect.value);
+
+                      fetch(CONFIG.BACKEND_URL + "/replace-category-image", {
+                        method: "POST",
+                        body: form
+                      })
+                        .then(res => res.json())
+                        .then(data => {
+                          if (data.success) {
+                            showMessage(data.message);
+                            refreshCategories();
+                          } else {
+                            showMessage(data.error || "Replace failed", true);
+                          }
+                        })
+                        .catch(() => showMessage("Replace failed", true));
+                    };
+
+                    block.appendChild(premSelect);
+                    block.appendChild(confirmBtn);
+                  };
+
+                  input.click();
+                };
+
+                const deleteImageBtn = document.createElement("button");
+                deleteImageBtn.className = "delete-btn";
+                deleteImageBtn.textContent = "Delete";
+                deleteImageBtn.style.display = "none";
+
+                deleteImageBtn.onclick = () => {
+                  if (!confirm(`Are you sure you want to delete '${img.filename}'?`)) return;
+
+                  const form = new FormData();
+                  form.append("category_name", category.category);
+                  form.append("filename", img.filename);
+
+                  fetch(CONFIG.BACKEND_URL + "/delete-image-from-category", {
+                    method: "POST",
+                    body: form
+                  })
+                    .then(res => res.json())
+                    .then(data => {
+                      if (data.success) {
+                        showMessage(data.message);
+                        refreshCategories();
+                      } else {
+                        showMessage(data.error || "Delete failed", true);
+                      }
+                    })
+                    .catch(() => showMessage("Delete failed", true));
+                };
+
+                block.append(image, name, prem, dropdown, replaceImageBtn, deleteImageBtn);
+                imageScroll.appendChild(block);
+              });
+
+              card.append(title, editBtn, actions, imageScroll);
+              container.appendChild(card);
+
+              editBtn.onclick = () => {
+                actions.style.display = actions.style.display === "flex" ? "none" : "flex";
+              };
+            });
+          })
+          .catch(err => {
+            loader.textContent = "Failed to load categories. Please try again.";
+            console.error(err);
+          });
+      }
+
+      loadCategories();
+    });
+  </script>
+</body>
+
+</html>

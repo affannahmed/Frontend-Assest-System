@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Asset Management Portal</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+    }
+
+    .topbar {
+      background-color: #469C9C;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 20px;
+      height: 70px;
+      position: relative;
+    }
+
+    .logo-container {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .logo img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+    }
+
+    .logo-text {
+      font-size: 12px;
+      margin-top: 5px;
+      color: white;
+    }
+
+    .title {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .main-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: calc(100vh - 70px);
+      gap: 20px;
+    }
+
+    .main-image {
+      max-width: 200px;
+      margin-bottom: 20px;
+    }
+
+    .button {
+      padding: 15px 30px;
+      background-color: #469C9C;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      width: 200px;
+    }
+
+    .button:hover {
+      background-color: #387d7d;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <div class="topbar">
+    <div class="logo-container">
+      <div class="logo">
+        <img src="../assets/images/cdn.png" alt="Logo">
+      </div>
+      <div class="logo-text">Code Knitters</div>
+    </div>
+    <div class="title">Asset Management Portal</div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <img class="main-image" src="../assets/images/main.png" alt="Main Image" />
+    <a href="IBGC_app/IBGC_dashboard.html">
+  <button class="button">IBGC</button>
+</a>
+
+
+    <a href="Imagine_app/Manage_Categories/cat_dash.html">
+  <button class="button">Imagine</button>
+</a>
+
+    
+  </div>
+
+</body>
+</html>

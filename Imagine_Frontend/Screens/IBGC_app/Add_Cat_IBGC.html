@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Add New Category</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+    }
+
+    .topbar {
+      background-color: #469C9C;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 20px;
+      height: 70px;
+      position: relative;
+    }
+
+    .logo-container {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .logo img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+    }
+
+    .logo-text {
+      font-size: 12px;
+      margin-top: 5px;
+      color: white;
+    }
+
+    .title {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .container {
+      padding: 20px;
+      max-width: 800px;
+      margin: auto;
+    }
+
+    label {
+      font-weight: bold;
+      margin-top: 15px;
+      display: block;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    input[type="file"] {
+      margin-top: 10px;
+    }
+
+    .image-preview {
+      margin-top: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .image-block {
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 10px;
+      background-color: #fff;
+      max-width: 150px;
+    }
+
+    .image-block img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    .image-block select {
+      width: 100%;
+      padding: 5px;
+      border-radius: 4px;
+    }
+
+    .submit-button {
+      background-color: #469C9C;
+      color: white;
+      padding: 12px 25px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-top: 20px;
+    }
+
+    .submit-button:hover {
+      background-color: #387d7d;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <div class="topbar">
+    <div class="logo-container">
+      <div class="logo">
+        <img src="../../assets/images/cdn.png" alt="Logo">
+      </div>
+      <div class="logo-text">Code Knitters</div>
+    </div>
+    <div class="title">Add New Category</div>
+  </div>
+
+  <div class="container">
+    <form id="categoryForm" method="POST" enctype="multipart/form-data">
+      <label for="main_category">Main Category Name:</label>
+      <input type="text" name="category_name" id="main_category" required>
+
+      <label>Select Images Manually:</label>
+      <input type="file" id="manualImages" accept="image/*" multiple>
+
+      <label>OR Select a Folder:</label>
+      <input type="file" id="folderImages" accept="image/*" multiple webkitdirectory directory>
+
+      <div id="imagePreview" class="image-preview"></div>
+
+      <button type="submit" class="submit-button">Submit Category</button>
+    </form>
+  </div>
+
+  <!-- CONFIG JS (Fixed path) -->
+  <script src="../config.js"></script>
+
+  <script>
+    const manualImagesInput = document.getElementById('manualImages');
+    const folderImagesInput = document.getElementById('folderImages');
+    const imagePreview = document.getElementById('imagePreview');
+    const form = document.getElementById('categoryForm');
+
+    let selectedFiles = [];
+
+    function showPreview(files) {
+      imagePreview.innerHTML = "";
+      selectedFiles = Array.from(files);
+
+      selectedFiles.forEach((file, index) => {
+        const block = document.createElement('div');
+        block.classList.add('image-block');
+
+        const img = document.createElement('img');
+        img.src = URL.createObjectURL(file);
+
+        const dropdown = document.createElement('select');
+        dropdown.name = 'prem-select';
+        dropdown.dataset.index = index;
+
+        const optFalse = document.createElement('option');
+        optFalse.value = 'false';
+        optFalse.textContent = 'Premium: False';
+
+        const optTrue = document.createElement('option');
+        optTrue.value = 'true';
+        optTrue.textContent = 'Premium: True';
+
+        dropdown.appendChild(optFalse);
+        dropdown.appendChild(optTrue);
+
+        block.appendChild(img);
+        block.appendChild(dropdown);
+        imagePreview.appendChild(block);
+      });
+    }
+
+    manualImagesInput.addEventListener('change', () => {
+      folderImagesInput.value = "";
+      showPreview(manualImagesInput.files);
+    });
+
+    folderImagesInput.addEventListener('change', () => {
+      manualImagesInput.value = "";
+      showPreview(folderImagesInput.files);
+    });
+
+    form.addEventListener('submit', function(event) {
+      event.preventDefault();
+
+      const formData = new FormData();
+      const categoryName = document.getElementById("main_category").value.trim();
+
+      if (!categoryName) {
+        alert("Please enter a category name.");
+        return;
+      }
+
+      formData.append("category_name", categoryName);
+
+      if (!selectedFiles.length) {
+        alert("Please select at least one image.");
+        return;
+      }
+
+      selectedFiles.forEach((file, index) => {
+        formData.append("images", file);
+
+        const dropdown = document.querySelector(`select[data-index="${index}"]`);
+        const premValue = dropdown ? dropdown.value : "false";
+        formData.append("prem", premValue);
+      });
+
+      fetch(CONFIG.BACKEND_URL + "/add-category_IBGC", {
+        method: 'POST',
+        body: formData
+      })
+      .then(res => res.json())
+      .then(data => {
+        alert(data.message || JSON.stringify(data));
+        form.reset();
+        imagePreview.innerHTML = "";
+        selectedFiles = [];
+      })
+      .catch(err => {
+        alert('Error: ' + err.message);
+      });
+    });
+  </script>
+
+</body>
+</html>

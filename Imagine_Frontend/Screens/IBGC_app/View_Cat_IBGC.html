@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>View Categories</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+    }
+
+    .topbar {
+      background-color: #469C9C;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 20px;
+      height: 70px;
+      position: relative;
+    }
+
+    .logo-container {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .logo img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+    }
+
+    .logo-text {
+      font-size: 12px;
+      margin-top: 5px;
+      color: white;
+    }
+
+    .title {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .container {
+      padding: 20px;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    .category-card {
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      margin-bottom: 30px;
+      padding: 20px;
+    }
+
+    .category-title {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #333;
+    }
+
+    .image-scroll {
+      display: flex;
+      overflow-x: auto;
+      gap: 15px;
+      padding-bottom: 10px;
+    }
+
+   .image-block img {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+
+    .image-block img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+    }
+
+    .filename {
+      margin-top: 5px;
+      font-size: 12px;
+      color: #555;
+    }
+
+    .loader {
+      text-align: center;
+      padding: 50px;
+      font-size: 18px;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <div class="topbar">
+    <div class="logo-container">
+      <div class="logo">
+        <img src="../../assets/images/cdn.png" alt="Logo">
+      </div>
+      <div class="logo-text">Code Knitters</div>
+    </div>
+    <div class="title">View Categories IBGC</div>
+  </div>
+
+  <div class="container" id="categoryContainer">
+    <div class="loader" id="loader">Loading categories...</div>
+  </div>
+
+  <!-- CONFIG JS (Fixed path) -->
+  <script src="../config.js"></script>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const container = document.getElementById("categoryContainer");
+      const loader = document.getElementById("loader");
+
+      fetch(CONFIG.BACKEND_URL + "/view-category_IBGC")
+        .then(res => res.json())
+        .then(data => {
+          loader.style.display = "none";
+
+          if (!Array.isArray(data) || data.length === 0) {
+            container.innerHTML = "<p>No categories found.</p>";
+            return;
+          }
+
+          data.forEach(category => {
+            const card = document.createElement("div");
+            card.className = "category-card";
+
+            const title = document.createElement("div");
+            title.className = "category-title";
+            title.textContent = category.category;
+
+            const imageScroll = document.createElement("div");
+            imageScroll.className = "image-scroll";
+
+            category.images.forEach(img => {
+              const block = document.createElement("div");
+              block.className = "image-block";
+
+              const image = document.createElement("img");
+              image.src = CONFIG.BACKEND_URL + img.url;
+              image.alt = img.filename;
+
+              const name = document.createElement("div");
+              name.className = "filename";
+              name.textContent = img.filename;
+
+              block.appendChild(image);
+              block.appendChild(name);
+              imageScroll.appendChild(block);
+            });
+
+            card.appendChild(title);
+            card.appendChild(imageScroll);
+            container.appendChild(card);
+          });
+        })
+        .catch(err => {
+          loader.textContent = "Failed to load categories. Please try again.";
+          console.error(err);
+        });
+    });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>View Categories</title>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="../../Shared/css/topbar.css" />
+  <link rel="stylesheet" href="../../Shared/css/styles.css" />
+
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; margin: 0; background-color: #f4f4f9; }
+    .topbar { position: fixed; top: 0; width: 100%; height: 60px; background: #469C9C; color: white; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.2); z-index: 10; }
+    .container { padding: 90px 30px 30px; }
+
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      margin-bottom: 30px;
+    }
+
+    .card h2, .card h3 {
+      margin-top: 0;
+    }
+
+    .image-scroll {
+      display: flex;
+      gap: 15px;
+      overflow-x: auto;
+      padding-bottom: 10px;
+      margin-bottom: 10px;
+    }
+
+    .image-wrapper {
+      cursor: default;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-size: 13px;
+      text-align: center;
+    }
+
+    .image-wrapper img {
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+      border-radius: 10px;
+      border: 1px solid #ddd;
+    }
+
+    .loading {
+      text-align: center;
+      margin-top: 50px;
+      font-size: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="logo-container">
+      <div class="logo"><img src="../../../assets/images/cdn.png" alt="Logo" style="height: 40px;"></div>
+      <div class="logo-text">Code Knitters</div>
+    </div>
+    <div class="title">View All Categories</div>
+  </div>
+
+  <div class="container" id="category-container">
+    <div class="loading">Loading categories...</div>
+  </div>
+
+  <!-- Load config first -->
+  <script src="../../config.js"></script>
+
+  <script>
+    function resolveImageUrl(url) {
+      // If it starts with http or https, return as-is
+      if (url.startsWith("http://") || url.startsWith("https://")) {
+        return url;
+      }
+      // Otherwise, prefix it with backend host
+      return `${CONFIG.BACKEND_URL}${url}`;
+    }
+
+    async function fetchCategories() {
+      const container = document.getElementById("category-container");
+      container.innerHTML = "<div class='loading'>Loading categories...</div>";
+
+      try {
+        const res = await fetch(`${CONFIG.BACKEND_URL}/get-category-structure`);
+        if (!res.ok) throw new Error("API returned non-200 status");
+
+        const data = await res.json();
+
+        if (!data.categories || data.categories.length === 0) {
+          container.innerHTML = "<div class='loading'>No categories found.</div>";
+          return;
+        }
+
+        container.innerHTML = "";
+
+        data.categories.forEach(cat => {
+          const card = document.createElement("div");
+          card.className = "card";
+
+          const mainTitle = document.createElement("h2");
+          mainTitle.textContent = `Main Category: ${cat.main_category}`;
+
+          const subTitle = document.createElement("h3");
+          subTitle.textContent = `Sub Category: ${cat.sub_category || "None"}`;
+
+          const imageScroll = document.createElement("div");
+          imageScroll.className = "image-scroll";
+
+          const sortedImages = [...cat.images].sort((a, b) => {
+            const nameA = parseInt(a.name);
+            const nameB = parseInt(b.name);
+            return isNaN(nameA) || isNaN(nameB) ? a.name.localeCompare(b.name) : nameA - nameB;
+          });
+
+          sortedImages.forEach(img => {
+            const wrapper = document.createElement("div");
+            wrapper.className = "image-wrapper";
+
+            const image = document.createElement("img");
+            image.src = resolveImageUrl(img.url);  
+            image.alt = img.name;
+
+            const caption = document.createElement("div");
+            caption.innerHTML = `<strong>${img.name}</strong>`;
+
+            wrapper.appendChild(image);
+            wrapper.appendChild(caption);
+            imageScroll.appendChild(wrapper);
+          });
+
+          card.appendChild(mainTitle);
+          card.appendChild(subTitle);
+          card.appendChild(imageScroll);
+          container.appendChild(card);
+        });
+
+      } catch (err) {
+        container.innerHTML = "<div class='loading'>Failed to load categories.</div>";
+        console.error("Fetch error:", err);
+      }
+    }
+
+    window.onload = fetchCategories;
+  </script>
+</body>
+</html>
