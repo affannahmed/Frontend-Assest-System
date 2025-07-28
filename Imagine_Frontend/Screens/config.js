@@ -1,4 +1,4 @@
 // config.js
 const CONFIG = {
-  BACKEND_URL: "http://127.0.0.1:5001"
+  BACKEND_URL: "https://7091b1779dbe.ngrok-free.app"
 };
