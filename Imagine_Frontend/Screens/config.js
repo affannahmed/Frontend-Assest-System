@@ -1,4 +1,4 @@
 // config.js
 const CONFIG = {
-  BACKEND_URL: "https://7091b1779dbe.ngrok-free.app"
+  BACKEND_URL: "https://backend-asset-system.onrender.com"
 };
