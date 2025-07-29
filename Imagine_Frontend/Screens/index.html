@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Asset Management Portal</title>
+  <title>Login - Asset Management Portal</title>
   <style>
     body {
       margin: 0;
@@ -40,42 +40,147 @@
       color: white;
     }
 
-    .title {
-      position: absolute;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 20px;
-      font-weight: bold;
-    }
+.title {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.main-title {
+  font-size: 22px;
+  font-weight: bold;
+  color: white;
+}
+
+.sub-title {
+  font-size: 14px;
+  color: #ffffff;
+  margin-top: 2px;
+  letter-spacing: 2px; /* Adjust this value as needed */
+}
+
+
 
     .main-content {
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-start;
+      padding-top: 40px;
       height: calc(100vh - 70px);
       gap: 20px;
     }
 
-    .main-image {
-      max-width: 200px;
+    .login-image {
+      width: 120px;
+      height: auto;
       margin-bottom: 20px;
+      opacity: 0.9;
+      transition: opacity 0.3s;
     }
 
-    .button {
-      padding: 15px 30px;
+    .login-image:hover {
+      opacity: 1;
+    }
+
+    .input-field {
+      padding: 12px;
+      width: 100%;
+      max-width: 300px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+      box-sizing: border-box;
+      transition: border-color 0.3s;
+    }
+
+    .input-field:focus {
+      outline: none;
+      border-color: #469C9C;
+    }
+
+    .password-container {
+      position: relative;
+      width: 100%;
+      max-width: 300px;
+    }
+
+    .password-container input {
+      width: 100%;
+      padding-right: 40px;
+    }
+
+    .show-hide {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: #999;
+      cursor: pointer;
+      font-size: 13px;
+      opacity: 0.6;
+      transition: opacity 0.3s;
+    }
+
+    .show-hide:hover,
+    .show-hide:focus {
+      opacity: 1;
+    }
+
+    .login-button {
+      padding: 12px;
+      width: 100%;
+      max-width: 300px;
       background-color: #469C9C;
       color: white;
       border: none;
-      border-radius: 8px;
+      border-radius: 6px;
       font-size: 16px;
       cursor: pointer;
       transition: background-color 0.3s;
-      width: 200px;
     }
 
-    .button:hover {
+    .login-button:hover {
       background-color: #387d7d;
+    }
+
+    .snackbar {
+      visibility: hidden;
+      min-width: 250px;
+      background-color: #333;
+      color: #fff;
+      text-align: center;
+      border-radius: 4px;
+      padding: 14px;
+      position: fixed;
+      z-index: 1;
+      left: 50%;
+      bottom: 30px;
+      transform: translateX(-50%);
+      font-size: 14px;
+    }
+
+    .snackbar.show {
+      visibility: visible;
+      animation: fadein 0.5s, fadeout 0.5s 2.5s;
+    }
+
+    @keyframes fadein {
+      from { bottom: 10px; opacity: 0; }
+      to { bottom: 30px; opacity: 1; }
+    }
+
+    @keyframes fadeout {
+      from { bottom: 30px; opacity: 1; }
+      to { bottom: 10px; opacity: 0; }
     }
   </style>
 </head>
@@ -85,27 +190,96 @@
   <div class="topbar">
     <div class="logo-container">
       <div class="logo">
-        <img src="../assets/images/cdn.png" alt="Logo">
+        <img src="assets/images/cdn.png" alt="Logo">
       </div>
       <div class="logo-text">Code Knitters</div>
     </div>
-    <div class="title">Asset Management Portal</div>
+    <div class="title">
+  <div class="main-title">Welcome!</div>
+  <div class="sub-title">Log in to continue</div>
+</div>
+
   </div>
 
   <!-- Main Content -->
   <div class="main-content">
-    <img class="main-image" src="../assets/images/main.png" alt="Main Image" />
-    <a href="IBGC_app/IBGC_dashboard.html">
-  <button class="button">IBGC</button>
-</a>
+    <!-- Login Image -->
+    <img src="assets/images/login.png" alt="Login" class="login-image" />
 
+    <!-- Email Field -->
+    <input type="email" id="email" class="input-field" placeholder="Enter Email" />
 
-    <a href="Imagine_app/Manage_Categories/cat_dash.html">
-  <button class="button">Imagine</button>
-</a>
+    <!-- Password Field -->
+    <div class="password-container">
+      <input type="password" id="password" class="input-field" placeholder="Enter Password" />
+      <button class="show-hide" onclick="togglePassword()" id="toggleBtn">Show</button>
+    </div>
 
-    
+    <!-- Login Button -->
+    <button class="login-button" onclick="handleLogin()">Login</button>
   </div>
 
+  <!-- Snackbar -->
+  <div id="snackbar"></div>
+
+  <!-- Config -->
+  <script src="config.js"></script>
+
+  <!-- Script -->
+  <script>
+    function showSnackbar(message, isSuccess = false) {
+      const snackbar = document.getElementById("snackbar");
+      snackbar.innerText = message;
+      snackbar.style.backgroundColor = isSuccess ? "#4CAF50" : "#f44336";
+      snackbar.className = "snackbar show";
+      setTimeout(() => {
+        snackbar.className = snackbar.className.replace("show", "");
+      }, 3000);
+    }
+
+    function togglePassword() {
+      const passwordInput = document.getElementById("password");
+      const toggleBtn = document.getElementById("toggleBtn");
+      if (passwordInput.type === "password") {
+        passwordInput.type = "text";
+        toggleBtn.innerText = "Hide";
+      } else {
+        passwordInput.type = "password";
+        toggleBtn.innerText = "Show";
+      }
+    }
+
+    async function handleLogin() {
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
+
+      if (!email || !password) {
+        showSnackbar("Please enter both email and password.");
+        return;
+      }
+
+      try {
+        const response = await fetch(`${CONFIG.BACKEND_URL}/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password })
+        });
+
+        const result = await response.json();
+
+        if (response.status === 200) {
+          showSnackbar("Login successful!", true);
+          setTimeout(() => {
+            window.location.href = "main_dashboard.html";
+          }, 1500);
+        } else {
+          showSnackbar(result.message || "Login failed.");
+        }
+      } catch (error) {
+        showSnackbar("Server error. Try again later.");
+        console.error(error);
+      }
+    }
+  </script>
 </body>
 </html>
