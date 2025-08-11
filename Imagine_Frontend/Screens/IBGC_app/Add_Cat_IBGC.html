@@ -134,6 +134,9 @@
     <form id="categoryForm" method="POST" enctype="multipart/form-data">
       <label for="main_category">Main Category Name:</label>
       <input type="text" name="category_name" id="main_category" required>
+      <label for="sub_category">Sub Category Name (Optional):</label>
+      <input type="text" name="sub_category_name" id="sub_category" placeholder="Optional">
+
 
       <label>Select Images Manually:</label>
       <input type="file" id="manualImages" accept="image/*" multiple>
@@ -200,47 +203,52 @@
       showPreview(folderImagesInput.files);
     });
 
-    form.addEventListener('submit', function(event) {
-      event.preventDefault();
+form.addEventListener('submit', function(event) {
+  event.preventDefault();
 
-      const formData = new FormData();
-      const categoryName = document.getElementById("main_category").value.trim();
+  const formData = new FormData();
+  const categoryName = document.getElementById("main_category").value.trim();
+  const subCategory = document.getElementById("sub_category").value.trim(); // NEW
 
-      if (!categoryName) {
-        alert("Please enter a category name.");
-        return;
-      }
+  if (!categoryName) {
+    alert("Please enter a main category name.");
+    return;
+  }
 
-      formData.append("category_name", categoryName);
+  formData.append("category_name", categoryName);
 
-      if (!selectedFiles.length) {
-        alert("Please select at least one image.");
-        return;
-      }
+  if (subCategory) {
+    formData.append("sub_category_name", subCategory);  // NEW
+  }
 
-      selectedFiles.forEach((file, index) => {
-        formData.append("images", file);
+  if (!selectedFiles.length) {
+    alert("Please select at least one image.");
+    return;
+  }
 
-        const dropdown = document.querySelector(`select[data-index="${index}"]`);
-        const premValue = dropdown ? dropdown.value : "false";
-        formData.append("prem", premValue);
-      });
+  selectedFiles.forEach((file, index) => {
+    formData.append("images", file);
+    const dropdown = document.querySelector(`select[data-index="${index}"]`);
+    const premValue = dropdown ? dropdown.value : "false";
+    formData.append("prem", premValue);
+  });
 
-      fetch(CONFIG.BACKEND_URL + "/add-category_IBGC", {
-        method: 'POST',
-        body: formData
-      })
-      .then(res => res.json())
-      .then(data => {
-        alert(data.message || JSON.stringify(data));
-        form.reset();
-        imagePreview.innerHTML = "";
-        selectedFiles = [];
-      })
-      .catch(err => {
-        alert('Error: ' + err.message);
-      });
-    });
+  fetch(CONFIG.BACKEND_URL + "/add-category_IBGC", {
+    method: 'POST',
+    body: formData
+  })
+  .then(res => res.json())
+  .then(data => {
+    alert(data.message || JSON.stringify(data));
+    form.reset();
+    imagePreview.innerHTML = "";
+    selectedFiles = [];
+  })
+  .catch(err => {
+    alert('Error: ' + err.message);
+  });
+});
+
   </script>
 
 </body>

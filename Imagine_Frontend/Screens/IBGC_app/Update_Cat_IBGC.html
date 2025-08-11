@@ -4,13 +4,26 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>View Categories</title>
- <style>
+  <style>
+    /* ===== Global ===== */
     body {
       margin: 0;
       font-family: Arial, sans-serif;
       background-color: #f9f9f9;
+      color: #333;
     }
-
+    button {
+      font-family: inherit;
+      cursor: pointer;
+      border: none;
+      border-radius: 4px;
+      transition: background-color 0.3s ease;
+    }
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    /* ===== Top Bar ===== */
     .topbar {
       background-color: #469C9C;
       color: white;
@@ -20,536 +33,905 @@
       padding: 10px 20px;
       height: 70px;
       position: relative;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
-
     .logo-container {
       display: flex;
       flex-direction: column;
       align-items: flex-start;
     }
-
     .logo img {
       width: 40px;
       height: 40px;
       border-radius: 50%;
+      object-fit: cover;
     }
-
     .logo-text {
       font-size: 12px;
       margin-top: 5px;
       color: white;
+      user-select: none;
     }
-
     .title {
       position: absolute;
       left: 50%;
       transform: translateX(-50%);
       font-size: 20px;
       font-weight: bold;
+      user-select: none;
+      white-space: nowrap;
     }
-
+    /* ===== Container ===== */
     .container {
       padding: 20px;
       max-width: 1200px;
       margin: auto;
     }
-
-    .category-card {
-      background-color: #fff;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-      margin-bottom: 30px;
-      padding: 20px;
-      position: relative;
-    }
-
-    .category-title {
-      font-size: 18px;
-      font-weight: bold;
-      margin-bottom: 10px;
-      color: #333;
-    }
-
-    .image-scroll {
-      display: flex;
-      overflow-x: auto;
-      gap: 15px;
-      padding-bottom: 10px;
-    }
-
-    .image-block {
-      text-align: center;
-      position: relative;
-    }
-
-    .image-block img {
-      width: 80px;
-      height: 80px;
-      object-fit: cover;
-      border-radius: 10%;
-    }
-
-    .filename {
-      margin-top: 5px;
-      font-size: 12px;
-      color: #555;
-    }
-
-    .prem-flag {
-      font-size: 11px;
-      color: #888;
-    }
-
     .loader {
       text-align: center;
       padding: 50px;
       font-size: 18px;
       color: #555;
     }
-
+    /* ===== Category Card ===== */
+    .category-card {
+      background-color: #fff;
+      border: 1px solid #ccc;
+      padding: 20px;
+      margin-bottom: 30px;
+      border-radius: 8px;
+      position: relative;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
     .edit-btn {
       position: absolute;
-      top: 20px;
-      right: 20px;
+      top: 15px;
+      right: 15px;
       background-color: orange;
       color: white;
-      border: none;
-      padding: 6px 12px;
-      cursor: pointer;
+      padding: 8px 12px;
+      font-size: 14px;
       border-radius: 4px;
+      user-select: none;
     }
-
-    .action-buttons {
-      display: none;
-      flex-direction: column;
-      margin-top: 10px;
+    .edit-btn:hover {
+      background-color: #e67300;
     }
-
-    .action-buttons button {
-      margin: 5px 0;
-      padding: 6px;
-      cursor: pointer;
+    .category-title {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 5px;
+      user-select: text;
     }
-
-    .replace-btn, .delete-btn {
-      display: none;
-      margin-top: 5px;
-      font-size: 10px;
-      background-color: #ccc;
-      border: none;
-      border-radius: 3px;
-      cursor: pointer;
-      padding: 3px 5px;
+    .sub-category-title {
+      font-style: italic;
+      margin-bottom: 15px;
+      font-size: 15px;
+      color: #555;
+      user-select: text;
     }
+    /* ===== Image Scroll ===== */
+    .image-scroll {
+      display: flex;
+      overflow-x: auto;
+      gap: 12px;
+      padding-top: 10px;
+      padding-bottom: 10px;
+      scroll-behavior: smooth;
+    }
+.image-block {
+  position: relative;
+  width: 140px;
+  flex-shrink: 0;
+  padding: 8px;
+  padding-bottom: 40px; /* reserve space for button */
+  background: #fafafa;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
+  transition: transform 0.2s ease, z-index 0s;
+}
 
-    .prem-dropdown {
-      display: none;
-      margin-top: 3px;
+.image-block:hover {
+  transform: scale(1.05);
+  box-shadow: 0 5px 15px rgb(0 0 0 / 0.2);
+  cursor: pointer;
+  z-index: 10;
+}
+
+.image-block button.submit-button {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 20px);
+  margin-top: 0;
+  z-index: 20;
+}
+
+    .image-block img {
+      width: 100%;
+      height: 100px;
+      object-fit: contain;
+      border-radius: 4px;
+      user-select: none;
+      pointer-events: none;
+      margin-bottom: 6px;
+      background-color: #fff;
+      border: 1px solid #ddd;
+      z-index: 10;
+    }
+    .filename {
+      font-size: 12px;
+      text-align: center;
+      word-break: break-word;
+      color: #333;
+      user-select: text;
+      min-height: 32px;
+    }
+    /* ===== Premium Tag ===== */
+    .prem-tag {
       font-size: 11px;
+      margin-top: 4px;
+      color: #fff;
+      background-color: #469C9C;
+      padding: 3px 8px;
+      border-radius: 10px;
+      display: inline-block;
+      text-align: center;
+      user-select: none;
+      font-weight: 600;
     }
-
-    .bulk-update-btn {
+    /* ===== Modal Styles ===== */
+    .modal {
       display: none;
-      margin-top: 10px;
-      background-color: #28a745;
-      color: white;
-      border: none;
-      padding: 6px 12px;
-      border-radius: 4px;
-      cursor: pointer;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100vw;
+      height: 100vh;
+      overflow-y: auto;
+      background-color: rgba(0,0,0,0.5);
+      backdrop-filter: blur(3px);
+      -webkit-backdrop-filter: blur(3px);
     }
-
-    .image-preview-block {
+    .modal-content {
+      background-color: white;
+      margin: 8% auto;
+      padding: 25px 30px;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 600px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.2);
+      position: relative;
+    }
+    .modal-header {
+      font-size: 20px;
+      margin-bottom: 20px;
+      font-weight: bold;
+      user-select: none;
+    }
+    .close-modal {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      font-size: 22px;
+      font-weight: bold;
+      color: #d9534f;
+      cursor: pointer;
+      user-select: none;
+    }
+    .modal-options button {
+      display: block;
+      width: 100%;
+      margin-bottom: 12px;
+      padding: 12px 0;
+      font-size: 16px;
+      background-color: #469C9C;
+      color: white;
+      border-radius: 6px;
+      font-weight: 600;
+      user-select: none;
+      transition: background-color 0.25s ease;
+    }
+    .modal-options button:hover:not(:disabled) {
+      background-color: #3a7a7a;
+    }
+    .modal-options button:disabled {
+      background-color: #999;
+      cursor: not-allowed;
+    }
+    .image-preview {
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
-      margin-top: 10px;
+      margin-top: 15px;
+      max-height: 280px;
+      overflow-y: auto;
+      padding-right: 5px;
     }
-
-    .image-preview-block div {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+    .image-preview .image-block {
+      width: 100px;
+      height: 140px;
+      justify-content: flex-start;
+      padding: 6px;
+      background: #fafafa;
+      box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
+      border-radius: 6px;
+      flex-shrink: 0;
+      transition: transform 0.15s ease;
     }
-
-    .image-preview-block img {
-      width: 60px;
-      height: 60px;
-      object-fit: cover;
-      border-radius: 5px;
-    }
-
-    .rename-input {
-      display: flex;
-      margin-top: 5px;
-      gap: 10px;
-    }
-
-    .rename-input input {
-      flex: 1;
-      padding: 5px;
-    }
-
-    .rename-input button {
-      background-color: #007bff;
-      color: white;
-      border: none;
-      padding: 6px 12px;
-      border-radius: 4px;
+    .image-preview .image-block:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 15px rgb(0 0 0 / 0.2);
       cursor: pointer;
+    }
+    .submit-button {
+      background-color: orange;
+      color: white;
+      padding: 12px 18px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 15px;
+      margin-top: 15px;
+      width: 100%;
+      user-select: none;
+      transition: background-color 0.25s ease;
+    }
+    .submit-button:hover:not(:disabled) {
+      background-color: #cc7a00;
+    }
+    .rename-input {
+      width: 100%;
+      padding: 10px 12px;
+      margin-bottom: 14px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 15px;
+      font-family: inherit;
+      box-sizing: border-box;
+    }
+    select {
+      padding: 6px 8px;
+      font-size: 14px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      margin-top: 6px;
+      width: 100%;
+      box-sizing: border-box;
+      font-family: inherit;
+      cursor: pointer;
+      user-select: none;
+      background: white;
+    }
+    select:focus {
+      outline-color: #469C9C;
+    }
+    input[type="file"] {
+      margin-top: 8px;
     }
   </style>
 </head>
 <body>
+
+  <!-- Top Bar -->
   <div class="topbar">
     <div class="logo-container">
       <div class="logo">
-        <img src="../../assets/images/cdn.png" alt="Logo">
+        <img src="../../assets/images/cdn.png" alt="Logo" />
       </div>
       <div class="logo-text">Code Knitters</div>
     </div>
-    <div class="title">Update Categories IBGC</div>
+    <div class="title">Update Categories IBGC :)</div>
   </div>
 
   <div class="container" id="categoryContainer">
     <div class="loader" id="loader">Loading categories...</div>
   </div>
 
+  <!-- Edit Modal -->
+  <div id="editModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalHeader">
+    <div class="modal-content">
+      <span class="close-modal" onclick="closeModal()" aria-label="Close modal">&times;</span>
+      <div class="modal-header" id="modalHeader">Edit Category</div>
+      <div class="modal-options" role="group" aria-label="Edit category options">
+        <button type="button" onclick="showAddImages()">Add Images</button>
+        <button type="button" onclick="showRenameSection()">Rename</button>
+        <button type="button" onclick="showReplaceSection()">Replace Image</button>
+        <button type="button" onclick="showDeleteSection()">Delete Image</button>
+        <button type="button" id="btnSetPremFlag" onclick="togglePremFlagUI()">Set Prem Flag</button>
+        <!-- <button type="button" disabled>Add New Subcategory</button> -->
+      </div>
+
+      <!-- Add Images Section -->
+      <div id="addImagesSection" style="display:none;">
+        <label for="manualImages">Select Images Manually:</label>
+        <input type="file" id="manualImages" accept="image/*" multiple>
+        <label for="folderImages">OR Select a Folder:</label>
+        <input type="file" id="folderImages" accept="image/*" multiple webkitdirectory directory>
+        <div id="imagePreview" class="image-preview" aria-live="polite" aria-atomic="true"></div>
+        <button class="submit-button" onclick="uploadImages()">Save</button>
+      </div>
+
+      <!-- Rename Section -->
+      <div id="renameSection" style="display:none;">
+        <label for="newMainCategory">Rename Main Category:</label>
+        <input type="text" id="newMainCategory" class="rename-input" />
+        <label for="newSubCategory">Rename Sub-Category:</label>
+        <input type="text" id="newSubCategory" class="rename-input" />
+        <button class="submit-button" onclick="renameCategory()">Save Rename</button>
+      </div>
+
+      <!-- Replace Section -->
+      <div id="replaceSection" style="display:none;">
+        <div id="replaceList" class="image-preview" aria-live="polite" aria-atomic="true"></div>
+      </div>
+
+      <!-- Delete Section -->
+      <div id="deleteSection" style="display:none;">
+        <div id="deleteList" class="image-preview" aria-live="polite" aria-atomic="true"></div>
+      </div>
+
+      <!-- Add inside the modal-content div -->
+<div id="setPremFlagSection" style="display:none;">
+  <div id="premFlagList" class="image-preview" aria-live="polite" aria-atomic="true"></div>
+  <button class="submit-button" onclick="submitPremFlags()">Save Prem Flags</button>
+</div>
+
+
+    </div>
+  </div>
+
   <script src="../config.js"></script>
   <script>
+    // ===== Variables =====
+    let selectedFiles = [];
+    let currentCategory = {};
+
+    // ===== Modal Control =====
+    function closeModal() {
+      document.getElementById("editModal").style.display = "none";
+      ["addImagesSection","renameSection","replaceSection","deleteSection"].forEach(id => {
+        document.getElementById(id).style.display = "none";
+      });
+      selectedFiles = [];
+      document.getElementById("imagePreview").innerHTML = "";
+      document.getElementById("replaceList").innerHTML = "";
+      document.getElementById("deleteList").innerHTML = "";
+    }
+
+    function showAddImages() {
+      document.getElementById("addImagesSection").style.display = "block";
+      ["renameSection","replaceSection","deleteSection"].forEach(id => {
+        document.getElementById(id).style.display = "none";
+      });
+    }
+
+    function showRenameSection() {
+      document.getElementById("renameSection").style.display = "block";
+      ["addImagesSection","replaceSection","deleteSection"].forEach(id => {
+        document.getElementById(id).style.display = "none";
+      });
+      document.getElementById("newMainCategory").value = currentCategory.main_category || "";
+      document.getElementById("newSubCategory").value = currentCategory.sub_category || "";
+    }
+
+    function showReplaceSection() {
+      document.getElementById("replaceSection").style.display = "block";
+      ["addImagesSection","renameSection","deleteSection"].forEach(id => {
+        document.getElementById(id).style.display = "none";
+      });
+      renderReplaceList();
+    }
+
+    function showDeleteSection() {
+      document.getElementById("deleteSection").style.display = "block";
+      ["addImagesSection","renameSection","replaceSection"].forEach(id => {
+        document.getElementById(id).style.display = "none";
+      });
+      renderDeleteList();
+    }
+
+    function openEditModal(categoryObj) {
+      currentCategory = categoryObj || {};
+      document.getElementById("editModal").style.display = "block";
+      document.getElementById("newMainCategory").value = currentCategory.main_category || "";
+      document.getElementById("newSubCategory").value = currentCategory.sub_category || "";
+    }
+
+    function togglePremFlagUI() {
+  const section = document.getElementById("setPremFlagSection");
+  const isVisible = section.style.display === "block";
+
+  // Hide all other sections
+  ["addImagesSection","renameSection","replaceSection","deleteSection"].forEach(id => {
+    document.getElementById(id).style.display = "none";
+  });
+
+  if (isVisible) {
+    section.style.display = "none";
+  } else {
+    section.style.display = "block";
+    renderPremFlagList();
+  }
+}
+
+function renderPremFlagList() {
+  const container = document.getElementById("premFlagList");
+  container.innerHTML = "";
+
+  if (!Array.isArray(currentCategory.images) || currentCategory.images.length === 0) {
+    container.innerHTML = "<p>No images available for this category.</p>";
+    return;
+  }
+
+  currentCategory.images.sort((a, b) => naturalSort(a.filename, b.filename));
+
+  currentCategory.images.forEach(imgObj => {
+    const block = document.createElement('div');
+    block.classList.add('image-block');
+
+    const img = document.createElement('img');
+    img.src = CONFIG.BACKEND_URL + imgObj.url;
+    img.alt = imgObj.filename;
+
+    const name = document.createElement('div');
+    name.className = 'filename';
+    name.textContent = imgObj.filename;
+
+    const premSelect = document.createElement('select');
+    premSelect.name = 'prem-select';
+    premSelect.dataset.filename = imgObj.filename;
+
+    const optFalse = document.createElement('option');
+    optFalse.value = 'false';
+    optFalse.textContent = 'Premium: False';
+
+    const optTrue = document.createElement('option');
+    optTrue.value = 'true';
+    optTrue.textContent = 'Premium: True';
+
+    premSelect.appendChild(optFalse);
+    premSelect.appendChild(optTrue);
+
+    premSelect.value = (imgObj.prem ? 'true' : 'false');
+
+    block.appendChild(img);
+    block.appendChild(name);
+    block.appendChild(premSelect);
+
+    container.appendChild(block);
+  });
+}
+function submitPremFlags() {
+  const selects = document.querySelectorAll("#premFlagList select[name='prem-select']");
+  if (!selects.length) {
+    alert("No images to update.");
+    return;
+  }
+
+  // Prepare updates array
+  const updates = [];
+  selects.forEach(select => {
+    const filename = select.dataset.filename;
+    const prem = select.value === 'true';
+
+    updates.push({
+      main_category: currentCategory.main_category,
+      sub_category: currentCategory.sub_category || null,
+      filename: filename,
+      prem: prem
+    });
+  });
+
+  fetch(CONFIG.BACKEND_URL + "/update-prem-flag", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(updates)
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      alert("Premium flags updated successfully!");
+      closeModal();
+      location.reload();
+    } else {
+      alert("Error: " + (data.error || "Failed to update premium flags"));
+    }
+  })
+  .catch(err => {
+    alert("Error: " + err.message);
+  });
+}
+
+
+    // ===== Image Preview =====
+    function showPreview(files) {
+      const imagePreview = document.getElementById("imagePreview");
+      imagePreview.innerHTML = "";
+      selectedFiles = Array.from(files);
+
+      selectedFiles.forEach((file, index) => {
+        const block = document.createElement('div');
+        block.classList.add('image-block');
+
+        const img = document.createElement('img');
+        img.src = URL.createObjectURL(file);
+        img.alt = file.name;
+
+        const dropdown = document.createElement('select');
+        dropdown.name = 'prem-select';
+        dropdown.dataset.index = index;
+
+        const optFalse = document.createElement('option');
+        optFalse.value = 'false';
+        optFalse.textContent = 'Premium: False';
+
+        const optTrue = document.createElement('option');
+        optTrue.value = 'true';
+        optTrue.textContent = 'Premium: True';
+
+        dropdown.appendChild(optFalse);
+        dropdown.appendChild(optTrue);
+
+        block.appendChild(img);
+        block.appendChild(dropdown);
+        imagePreview.appendChild(block);
+      });
+    }
+
+    // ===== Event Listeners for File Inputs =====
+    document.getElementById("manualImages").addEventListener("change", function () {
+      document.getElementById("folderImages").value = "";
+      showPreview(this.files);
+    });
+
+    document.getElementById("folderImages").addEventListener("change", function () {
+      document.getElementById("manualImages").value = "";
+      showPreview(this.files);
+    });
+
+    // ===== Upload Images =====
+    function uploadImages() {
+      if (!selectedFiles.length) {
+        alert("Please select at least one image.");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("category_name", currentCategory.main_category);
+      if (currentCategory.sub_category) formData.append("sub_category", currentCategory.sub_category);
+
+      selectedFiles.forEach((file, index) => {
+        formData.append("images", file);
+        const dropdown = document.querySelector(`select[data-index="${index}"]`);
+        formData.append("prem", dropdown ? dropdown.value : "false");
+      });
+
+      fetch(CONFIG.BACKEND_URL + "/add-images-to-category", {
+        method: 'POST',
+        body: formData
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          alert(data.message || "Images added!");
+          closeModal();
+          location.reload();
+        } else {
+          alert("Error: " + (data.error || "Images add failed"));
+        }
+      })
+      .catch(err => {
+        alert("Error: " + err.message);
+      });
+    }
+
+    // ===== Rename Category =====
+    function renameCategory() {
+      const formData = new FormData();
+      formData.append("old_main_name", currentCategory.main_category);
+      formData.append("new_main_name", document.getElementById("newMainCategory").value);
+
+      if (currentCategory.sub_category) {
+        formData.append("old_sub_name", currentCategory.sub_category);
+      }
+
+      const newSubCategoryValue = document.getElementById("newSubCategory").value.trim();
+      if (newSubCategoryValue) {
+        formData.append("new_sub_name", newSubCategoryValue);
+      }
+
+      fetch(CONFIG.BACKEND_URL + "/rename-category", {
+        method: "POST",
+        body: formData
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          alert(`Rename successful: ${currentCategory.main_category} → ${document.getElementById("newMainCategory").value}`);
+          closeModal();
+          location.reload();
+        } else {
+          alert("Error: " + (data.error || "Rename failed"));
+        }
+      })
+      .catch(err => {
+        alert("Error: " + err.message);
+      });
+    }
+
+    // ===== Natural Sort Helper =====
+    function naturalSort(a, b) {
+      const regex = /(\d+)|(\D+)/g;
+      const aParts = a.match(regex);
+      const bParts = b.match(regex);
+      const len = Math.min(aParts.length, bParts.length);
+      for (let i = 0; i < len; i++) {
+        const aPart = aParts[i];
+        const bPart = bParts[i];
+        if (aPart !== bPart) {
+          const aNum = parseInt(aPart, 10);
+          const bNum = parseInt(bPart, 10);
+          if (!isNaN(aNum) && !isNaN(bNum)) {
+            return aNum - bNum;
+          }
+          return aPart.localeCompare(bPart);
+        }
+      }
+      return aParts.length - bParts.length;
+    }
+
+    // ===== Render Replace List =====
+    function renderReplaceList() {
+      const list = document.getElementById("replaceList");
+      list.innerHTML = "";
+
+      if (!Array.isArray(currentCategory.images) || currentCategory.images.length === 0) {
+        list.innerHTML = "<p>No images to replace for this category.</p>";
+        return;
+      }
+
+      currentCategory.images.sort((a, b) => naturalSort(a.filename, b.filename));
+
+      currentCategory.images.forEach(imgObj => {
+        const block = document.createElement('div');
+        block.classList.add('image-block');
+
+        const thumb = document.createElement('img');
+        thumb.src = CONFIG.BACKEND_URL + imgObj.url;
+        thumb.alt = imgObj.filename;
+
+        const name = document.createElement('div');
+        name.className = 'filename';
+        name.textContent = imgObj.filename;
+
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = 'image/*';
+        fileInput.style.display = 'none';
+        fileInput.onchange = function (e) {
+          const file = e.target.files[0];
+          if (file) {
+            handleReplaceImage(file, imgObj.filename, thumb, replaceBtn);
+          }
+        };
+
+        const replaceBtn = document.createElement('button');
+        replaceBtn.className = 'submit-button';
+        replaceBtn.style.marginTop = '8px';
+        replaceBtn.textContent = 'Replace';
+        replaceBtn.onclick = () => fileInput.click();
+
+        const premSelect = document.createElement('select');
+        premSelect.style.marginTop = '6px';
+        const pFalse = document.createElement('option'); pFalse.value = 'false'; pFalse.textContent = 'Prem: False';
+        const pTrue  = document.createElement('option'); pTrue.value = 'true';  pTrue.textContent = 'Prem: True';
+        premSelect.appendChild(pFalse);
+        premSelect.appendChild(pTrue);
+        premSelect.value = (imgObj.prem ? 'true' : 'false');
+
+        block.appendChild(thumb);
+        block.appendChild(name);
+        block.appendChild(premSelect);
+        block.appendChild(replaceBtn);
+        block.appendChild(fileInput);
+        list.appendChild(block);
+      });
+    }
+
+    // ===== Handle Replace Image =====
+    function handleReplaceImage(file, old_filename, thumbImgEl, replaceBtn) {
+      const block = replaceBtn.parentElement;
+      const premSelect = block.querySelector('select');
+      const prem = premSelect ? premSelect.value : 'false';
+
+      const formData = new FormData();
+      formData.append('main_category', currentCategory.main_category);
+      if (currentCategory.sub_category) formData.append('sub_category', currentCategory.sub_category);
+      formData.append('old_filename', old_filename);
+      formData.append('new_image', file);
+      formData.append('prem', prem);
+
+      replaceBtn.disabled = true;
+      replaceBtn.textContent = 'Replacing...';
+
+      fetch(CONFIG.BACKEND_URL + "/replace-category-image", {
+        method: "POST",
+        body: formData
+      })
+      .then(res => res.json())
+      .then(data => {
+        replaceBtn.disabled = false;
+        replaceBtn.textContent = 'Replace';
+        if (data.success) {
+          alert(data.message || 'Image replaced successfully');
+          thumbImgEl.src = URL.createObjectURL(file);
+          location.reload();
+        } else {
+          alert("Error: " + (data.error || "Replace failed"));
+        }
+      })
+      .catch(err => {
+        replaceBtn.disabled = false;
+        replaceBtn.textContent = 'Replace';
+        alert("Error: " + err.message);
+      });
+    }
+
+    // ===== Render Delete List =====
+    function renderDeleteList() {
+      const list = document.getElementById("deleteList");
+      list.innerHTML = "";
+
+      if (!Array.isArray(currentCategory.images) || currentCategory.images.length === 0) {
+        list.innerHTML = "<p>No images to delete for this category.</p>";
+        return;
+      }
+
+      currentCategory.images.sort((a, b) => naturalSort(a.filename, b.filename));
+
+      currentCategory.images.forEach(imgObj => {
+        const block = document.createElement('div');
+        block.classList.add('image-block');
+
+        const thumb = document.createElement('img');
+        thumb.src = CONFIG.BACKEND_URL + imgObj.url;
+        thumb.alt = imgObj.filename;
+
+        const name = document.createElement('div');
+        name.className = 'filename';
+        name.textContent = imgObj.filename;
+
+        const delBtn = document.createElement('button');
+        delBtn.className = 'submit-button';
+        delBtn.style.marginTop = '8px';
+        delBtn.textContent = 'Delete';
+        delBtn.onclick = () => handleDeleteImage(imgObj.filename, delBtn);
+
+        block.appendChild(thumb);
+        block.appendChild(name);
+        block.appendChild(delBtn);
+        list.appendChild(block);
+      });
+    }
+
+    // ===== Handle Delete Image =====
+    function handleDeleteImage(filename, btn) {
+      if (!confirm(`Are you sure you want to delete "${filename}"?`)) return;
+
+      const formData = new FormData();
+      formData.append('main_category', currentCategory.main_category);
+      if (currentCategory.sub_category) formData.append('sub_category', currentCategory.sub_category);
+      formData.append('filename', filename);
+
+      btn.disabled = true;
+      btn.textContent = 'Deleting...';
+
+      fetch(CONFIG.BACKEND_URL + "/delete-image-from-category", {
+        method: "POST",
+        body: formData
+      })
+      .then(res => res.json())
+      .then(data => {
+        btn.disabled = false;
+        btn.textContent = 'Delete';
+        if (data.success) {
+          alert(data.message || 'Image deleted successfully');
+          location.reload();
+        } else {
+          alert("Error: " + (data.error || "Delete failed"));
+        }
+      })
+      .catch(err => {
+        btn.disabled = false;
+        btn.textContent = 'Delete';
+        alert("Error: " + err.message);
+      });
+    }
+
+    // ===== Load Categories and Render =====
     document.addEventListener("DOMContentLoaded", function () {
       const container = document.getElementById("categoryContainer");
       const loader = document.getElementById("loader");
 
-      function showMessage(message, isError = false) {
-        alert((isError ? "❌ " : "✅ ") + message);
-      }
+      fetch(CONFIG.BACKEND_URL + "/view-category_IBGC")
+        .then(res => res.json())
+        .then(data => {
+          loader.style.display = "none";
+          if (!Array.isArray(data) || data.length === 0) {
+            container.innerHTML = "<p>No categories found.</p>";
+            return;
+          }
 
-      function refreshCategories() {
-        loader.style.display = "block";
-        container.innerHTML = "";
-        loadCategories();
-      }
+data.forEach(category => {
+  const card = document.createElement("div");
+  card.className = "category-card";
 
-      function loadCategories() {
-        fetch(CONFIG.BACKEND_URL + "/view-category_IBGC")
-          .then(res => res.json())
-          .then(data => {
-            loader.style.display = "none";
-            if (!Array.isArray(data) || data.length === 0) {
-              container.innerHTML = "<p>No categories found.</p>";
-              return;
-            }
+  // Main category title
+  const mainCatTitle = document.createElement("div");
+  mainCatTitle.className = "category-title";
+  mainCatTitle.textContent = "Main Category: " + category.main_category;
 
-            data.forEach(category => {
-              const card = document.createElement("div");
-              card.className = "category-card";
+  // Subcategory title
+  const subCatTitle = document.createElement("div");
+  subCatTitle.className = "sub-category-title";
+  subCatTitle.textContent = "Sub Category: " + (category.sub_category || "Null");
 
-              const title = document.createElement("div");
-              title.className = "category-title";
-              title.textContent = category.category;
+  // Edit Button
+  const editBtn = document.createElement("button");
+  editBtn.className = "edit-btn";
+  editBtn.textContent = "Edit";
+  editBtn.onclick = () => openEditModal(category);
 
-              const imageScroll = document.createElement("div");
-              imageScroll.className = "image-scroll";
+  // Image scroll container
+  const imageScroll = document.createElement("div");
+  imageScroll.className = "image-scroll";
 
-              const editBtn = document.createElement("button");
-              editBtn.className = "edit-btn";
-              editBtn.textContent = "Edit";
+  if (Array.isArray(category.images)) {
+    category.images.sort((a, b) => naturalSort(a.filename, b.filename));
+  } else {
+    category.images = [];
+  }
 
-              const actions = document.createElement("div");
-              actions.className = "action-buttons";
+  category.images.forEach(img => {
+    const block = document.createElement("div");
+    block.className = "image-block";
 
-              const addImagesBtn = document.createElement("button");
-              addImagesBtn.textContent = "Add Images";
-              addImagesBtn.onclick = () => {
-                const input = document.createElement("input");
-                input.type = "file";
-                input.accept = "image/*";
-                input.multiple = true;
-                input.onchange = () => {
-                  const files = Array.from(input.files);
-                  if (!files.length) return;
+    const image = document.createElement("img");
+    image.src = CONFIG.BACKEND_URL + img.url;
+    image.alt = img.filename;
 
-                  const imageData = [];
-                  const previewContainer = document.createElement("div");
-                  previewContainer.className = "image-preview-block";
+    const name = document.createElement("div");
+    name.className = "filename";
+    name.textContent = img.filename;
 
-                  files.forEach(file => {
-                    const wrapper = document.createElement("div");
-                    const img = document.createElement("img");
-                    img.src = URL.createObjectURL(file);
-                    const dropdown = document.createElement("select");
-                    dropdown.innerHTML = `
-                      <option value="false">false</option>
-                      <option value="true">true</option>
-                    `;
-                    imageData.push({ file, dropdown });
-                    wrapper.append(img, dropdown);
-                    previewContainer.appendChild(wrapper);
-                  });
+    const premTag = document.createElement("div");
+    premTag.className = "prem-tag";
+    premTag.textContent = "Premium: " + (img.prem ? "True" : "False");
 
-                  const confirmBtn = document.createElement("button");
-                  confirmBtn.textContent = "Upload Images";
-                  confirmBtn.style.marginTop = "10px";
+    block.appendChild(image);
+    block.appendChild(name);
+    block.appendChild(premTag);
+    imageScroll.appendChild(block);
+  });
 
-                  confirmBtn.onclick = () => {
-                    const formData = new FormData();
-                    formData.append("category_name", category.category);
-                    imageData.forEach(({ file, dropdown }) => {
-                      formData.append("images", file);
-                      formData.append("prem", dropdown.value);
-                    });
+  card.appendChild(mainCatTitle);
+  card.appendChild(subCatTitle);
+  card.appendChild(editBtn);       // Add Edit button here
+  card.appendChild(imageScroll);
 
-                    fetch(CONFIG.BACKEND_URL + "/add-images-to-category", {
-                      method: "POST",
-                      body: formData
-                    })
-                      .then(res => res.json())
-                      .then(res => {
-                        showMessage(res.message || "Images added");
-                        refreshCategories();
-                      })
-                      .catch(() => showMessage("Failed to upload images", true));
-                  };
+  container.appendChild(card);
+});
 
-                  card.appendChild(previewContainer);
-                  card.appendChild(confirmBtn);
-                };
-                input.click();
-              };
-
-              const renameBtn = document.createElement("button");
-              renameBtn.textContent = "Rename";
-              renameBtn.onclick = () => {
-                if (card.querySelector(".rename-input")) return;
-
-                const renameDiv = document.createElement("div");
-                renameDiv.className = "rename-input";
-
-                const input = document.createElement("input");
-                input.placeholder = "New category name";
-                input.value = category.category;
-
-                const submit = document.createElement("button");
-                submit.textContent = "Rename";
-
-                submit.onclick = () => {
-                  const old_name = category.category;
-                  const new_name = input.value.trim();
-                  if (!new_name) return alert("New name cannot be empty");
-                  if (old_name === new_name) return alert("New name must be different");
-
-                  const form = new FormData();
-                  form.append("old_name", old_name);
-                  form.append("new_name", new_name);
-
-                  fetch(CONFIG.BACKEND_URL + "/rename-category", {
-                    method: "POST",
-                    body: form
-                  })
-                    .then(res => res.json())
-                    .then(data => {
-                      if (data.success) {
-                        showMessage(data.message || "Renamed successfully.");
-                        refreshCategories();
-                      } else {
-                        showMessage(data.error || "Rename failed", true);
-                      }
-                    })
-                    .catch(() => showMessage("Rename failed", true));
-                };
-
-                renameDiv.append(input, submit);
-                card.appendChild(renameDiv);
-              };
-
-              const replaceBtn = document.createElement("button");
-              replaceBtn.textContent = "Replace";
-              replaceBtn.onclick = () => {
-                card.querySelectorAll(".replace-btn").forEach(btn => btn.style.display = "inline-block");
-              };
-
-              const deleteBtn = document.createElement("button");
-              deleteBtn.textContent = "Delete";
-              deleteBtn.onclick = () => {
-                card.querySelectorAll(".delete-btn").forEach(btn => btn.style.display = "inline-block");
-              };
-
-              const premEditBtn = document.createElement("button");
-              premEditBtn.textContent = "Set Prem Flag";
-
-              const bulkUpdateBtn = document.createElement("button");
-              bulkUpdateBtn.className = "bulk-update-btn";
-              bulkUpdateBtn.textContent = "Update All Prem Flags";
-
-              bulkUpdateBtn.onclick = () => {
-                const updates = [];
-                card.querySelectorAll(".image-block").forEach(block => {
-                  const dropdown = block.querySelector(".prem-dropdown");
-                  if (dropdown && dropdown.style.display !== "none") {
-                    const filename = block.querySelector("img").alt;
-                    const selectedPrem = dropdown.value;
-                    updates.push({
-                      category_name: category.category,
-                      filename,
-                      prem: selectedPrem
-                    });
-                  }
-                });
-
-                if (!updates.length) return showMessage("No changes made.", true);
-
-                fetch(CONFIG.BACKEND_URL + "/update-prem-flag", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify(updates)
-                })
-                  .then(res => res.json())
-                  .then(data => {
-                    if (data.success) {
-                      showMessage("Premium flags updated.");
-                      refreshCategories();
-                    } else {
-                      showMessage("Some updates failed.", true);
-                    }
-                  })
-                  .catch(() => showMessage("Update failed", true));
-              };
-
-              premEditBtn.onclick = () => {
-                card.querySelectorAll(".prem-dropdown").forEach(el => el.style.display = "inline");
-                bulkUpdateBtn.style.display = "inline-block";
-              };
-
-              actions.append(addImagesBtn, renameBtn, replaceBtn, deleteBtn, premEditBtn, bulkUpdateBtn);
-
-              category.images.forEach(img => {
-                const block = document.createElement("div");
-                block.className = "image-block";
-
-                const image = document.createElement("img");
-                image.src = CONFIG.BACKEND_URL + img.url;
-                image.alt = img.filename;
-
-                const name = document.createElement("div");
-                name.className = "filename";
-                name.textContent = img.filename;
-
-                const prem = document.createElement("div");
-                prem.className = "prem-flag";
-                prem.textContent = "Prem: " + (img.prem ? "true" : "false");
-
-                const dropdown = document.createElement("select");
-                dropdown.className = "prem-dropdown";
-                dropdown.style.display = "none";
-                dropdown.innerHTML = `
-                  <option value="false" ${!img.prem ? "selected" : ""}>false</option>
-                  <option value="true" ${img.prem ? "selected" : ""}>true</option>
-                `;
-
-                const replaceImageBtn = document.createElement("button");
-                replaceImageBtn.className = "replace-btn";
-                replaceImageBtn.textContent = "Replace";
-                replaceImageBtn.style.display = "none";
-
-                replaceImageBtn.onclick = () => {
-                  const input = document.createElement("input");
-                  input.type = "file";
-                  input.accept = "image/*";
-
-                  input.onchange = () => {
-                    const file = input.files[0];
-                    if (!file) return;
-
-                    const premSelect = document.createElement("select");
-                    premSelect.innerHTML = `
-                      <option value="false">false</option>
-                      <option value="true">true</option>
-                    `;
-
-                    const confirmBtn = document.createElement("button");
-                    confirmBtn.textContent = "Confirm Replace";
-                    confirmBtn.style.marginTop = "5px";
-
-                    confirmBtn.onclick = () => {
-                      const form = new FormData();
-                      form.append("category_name", category.category);
-                      form.append("old_filename", img.filename);
-                      form.append("new_image", file);
-                      form.append("prem", premSelect.value);
-
-                      fetch(CONFIG.BACKEND_URL + "/replace-category-image", {
-                        method: "POST",
-                        body: form
-                      })
-                        .then(res => res.json())
-                        .then(data => {
-                          if (data.success) {
-                            showMessage(data.message);
-                            refreshCategories();
-                          } else {
-                            showMessage(data.error || "Replace failed", true);
-                          }
-                        })
-                        .catch(() => showMessage("Replace failed", true));
-                    };
-
-                    block.appendChild(premSelect);
-                    block.appendChild(confirmBtn);
-                  };
-
-                  input.click();
-                };
-
-                const deleteImageBtn = document.createElement("button");
-                deleteImageBtn.className = "delete-btn";
-                deleteImageBtn.textContent = "Delete";
-                deleteImageBtn.style.display = "none";
-
-                deleteImageBtn.onclick = () => {
-                  if (!confirm(`Are you sure you want to delete '${img.filename}'?`)) return;
-
-                  const form = new FormData();
-                  form.append("category_name", category.category);
-                  form.append("filename", img.filename);
-
-                  fetch(CONFIG.BACKEND_URL + "/delete-image-from-category", {
-                    method: "POST",
-                    body: form
-                  })
-                    .then(res => res.json())
-                    .then(data => {
-                      if (data.success) {
-                        showMessage(data.message);
-                        refreshCategories();
-                      } else {
-                        showMessage(data.error || "Delete failed", true);
-                      }
-                    })
-                    .catch(() => showMessage("Delete failed", true));
-                };
-
-                block.append(image, name, prem, dropdown, replaceImageBtn, deleteImageBtn);
-                imageScroll.appendChild(block);
-              });
-
-              card.append(title, editBtn, actions, imageScroll);
-              container.appendChild(card);
-
-              editBtn.onclick = () => {
-                actions.style.display = actions.style.display === "flex" ? "none" : "flex";
-              };
-            });
-          })
-          .catch(err => {
-            loader.textContent = "Failed to load categories. Please try again.";
-            console.error(err);
-          });
-      }
-
-      loadCategories();
+        })
+        .catch(err => {
+          loader.style.display = "none";
+          container.innerHTML = "<p>Error loading categories.</p>";
+          console.error(err);
+        });
     });
   </script>
 </body>
-
 </html>

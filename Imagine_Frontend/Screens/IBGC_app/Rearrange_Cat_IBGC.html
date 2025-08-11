@@ -151,18 +151,20 @@
 </div>
 
 <script src="../config.js"></script>
-
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     const container = document.getElementById("categoryContainer");
     const loader = document.getElementById("loader");
+
     let selectedImages = [];
-    let selectedCategory = null;
+    let selectedMainCategory = null;
+    let selectedSubCategory = null;
 
     function resetSelection() {
       document.querySelectorAll(".image-block").forEach(el => el.classList.remove("selected"));
       selectedImages = [];
-      selectedCategory = null;
+      selectedMainCategory = null;
+      selectedSubCategory = null;
       document.querySelectorAll(".swap-btn").forEach(btn => btn.classList.remove("show"));
     }
 
@@ -182,7 +184,10 @@
 
           const title = document.createElement("div");
           title.className = "category-title";
-          title.textContent = category.category;
+
+          title.textContent = category.sub_category 
+            ? `${category.main_category} / ${category.sub_category}`
+            : category.main_category;
 
           const imageScroll = document.createElement("div");
           imageScroll.className = "image-scroll";
@@ -199,7 +204,8 @@
             image.src = CONFIG.BACKEND_URL + img.url;
             image.alt = img.filename;
             image.dataset.filename = img.filename;
-            image.dataset.category = category.category;
+            image.dataset.mainCategory = category.main_category;
+            image.dataset.subCategory = category.sub_category || "";
 
             const name = document.createElement("div");
             name.className = "filename";
@@ -210,15 +216,19 @@
             prem.textContent = img.prem ? "Premium" : "Free";
 
             image.addEventListener("click", () => {
-              if (selectedImages.length === 2) {
-                resetSelection();
+              if (selectedImages.length === 2) resetSelection();
+
+              if (!selectedMainCategory) {
+                selectedMainCategory = image.dataset.mainCategory;
+                selectedSubCategory = image.dataset.subCategory;
               }
 
-              if (!selectedCategory) {
-                selectedCategory = image.dataset.category;
+              if (
+                image.dataset.mainCategory !== selectedMainCategory ||
+                image.dataset.subCategory !== selectedSubCategory
+              ) {
+                return;
               }
-
-              if (image.dataset.category !== selectedCategory) return;
 
               if (block.classList.contains("selected")) {
                 block.classList.remove("selected");
@@ -245,7 +255,10 @@
             if (selectedImages.length !== 2) return;
 
             const formData = new FormData();
-            formData.append("category_name", selectedCategory);
+            formData.append("category_name", selectedMainCategory);
+            if (selectedSubCategory) {
+              formData.append("sub_category", selectedSubCategory);
+            }
             formData.append("image1_name", selectedImages[0]);
             formData.append("image2_name", selectedImages[1]);
 

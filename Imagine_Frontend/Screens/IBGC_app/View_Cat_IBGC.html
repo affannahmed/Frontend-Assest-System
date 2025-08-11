@@ -121,7 +121,7 @@
     <div class="loader" id="loader">Loading categories...</div>
   </div>
 
-  <!-- CONFIG JS (Fixed path) -->
+  <!-- CONFIG JS -->
   <script src="../config.js"></script>
 
   <script>
@@ -143,10 +143,17 @@
             const card = document.createElement("div");
             card.className = "category-card";
 
-            const title = document.createElement("div");
-            title.className = "category-title";
-            title.textContent = category.category;
+            // === Main Category Title ===
+            const mainCatTitle = document.createElement("div");
+            mainCatTitle.className = "category-title";
+            mainCatTitle.textContent = "Main Category: " + category.main_category;
 
+            // === Sub Category Title ===
+            const subCatTitle = document.createElement("div");
+            subCatTitle.className = "sub-category-title";
+            subCatTitle.textContent = "Sub Category: " + (category.sub_category ? category.sub_category : "Null");
+
+            // === Image Scroll Section ===
             const imageScroll = document.createElement("div");
             imageScroll.className = "image-scroll";
 
@@ -167,8 +174,12 @@
               imageScroll.appendChild(block);
             });
 
-            card.appendChild(title);
+            // Append to card
+            card.appendChild(mainCatTitle);
+            card.appendChild(subCatTitle);
             card.appendChild(imageScroll);
+
+            // Append to container
             container.appendChild(card);
           });
         })
@@ -179,5 +190,56 @@
     });
   </script>
 
+  <style>
+    .category-card {
+      border: 1px solid #ccc;
+      padding: 15px;
+      margin-bottom: 25px;
+      border-radius: 8px;
+    }
+
+    .category-title {
+      font-weight: bold;
+      font-size: 18px;
+      margin-bottom: 5px;
+    }
+
+    .sub-category-title {
+      font-style: italic;
+      margin-bottom: 10px;
+      font-size: 15px;
+      color: #555;
+    }
+
+    .image-scroll {
+      display: flex;
+      overflow-x: auto;
+      gap: 10px;
+      padding-top: 10px;
+    }
+
+    .image-block {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 120px;
+      flex-shrink: 0;
+    }
+
+    .image-block img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+    }
+
+    .filename {
+      margin-top: 5px;
+      font-size: 12px;
+      text-align: center;
+      word-break: break-word;
+    }
+  </style>
+
 </body>
+
 </html>
